@@ -1,17 +1,30 @@
 package aad.myapplication;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
+import android.net.Uri;
+import android.os.Environment;
+import android.provider.MediaStore;
+import android.support.annotation.Nullable;
+import android.support.constraint.ConstraintLayout;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 
 import static android.graphics.Color.BLACK;
 import static android.graphics.Color.WHITE;
@@ -26,9 +39,6 @@ public class MainActivity extends AppCompatActivity {
     private Button button5;
     private Button button6;
     private Button button7;
-    private TextView textView;
-    private TextView textView2;
-    private TextView textView3;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -94,14 +104,14 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
-//        this.button7.setOnClickListener(new Button.OnClickListener() {
-//
-//            @Override
-//            public void onClick(View v) {
-//                showImage7();
-//
-//            }
-//        });
+        this.button7.setOnClickListener(new Button.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                showImage7();
+
+            }
+        });
     }
 
     private void showImage1() {
@@ -153,25 +163,33 @@ public class MainActivity extends AppCompatActivity {
                 Bitmap.Config.ARGB_8888);
 
         int p = 0;
-//
+        final int alpha1 = 250;
         for (int i = 1; i < mPhotoWidth; i++) {
             for (int j = 1; j < mPhotoHeight; j++) {
 
                 p = bitmap1.getPixel(i, j);
+                int redValue = (int) (Color.red(p));
+                int greenValue = (int) (Color.green(p) * 0.5);
+                int blueValue = (int) (Color.blue(p) * 0.5);
 
-//                int alpha1 = Color.alpha(p);
-                int alpha1 = 150;
-                int redValue1 = Color.red(p);
-                int greenValue1 = Color.green(p);
-                int blueValue1 = Color.blue(p);
-                int blur = (redValue1 + greenValue1 + blueValue1) / 3;
-                bitmap.setPixel(i, j, Color.argb(alpha1, blur, blur, blur));
+
+                if (redValue > 255)
+                    redValue = 255;
+                if (greenValue > 255)
+                    greenValue = 255;
+                if (blueValue > 255)
+                    blueValue = 255;
+
+//
+                bitmap.setPixel(i, j, Color.rgb(redValue, greenValue, blueValue));
+//
             }
         }
 
-
         this.imageView.setImageBitmap(bitmap);
+
     }
+
 
     private void showImage4() {
 
@@ -270,17 +288,88 @@ public class MainActivity extends AppCompatActivity {
         }
 
         this.imageView.setImageBitmap(bitmap);
+
+    }
+
+    public int alpha1=0;
+
+    @Nullable
+    @Override
+    public ActionBar getSupportActionBar() {
+        return super.getSupportActionBar();
+    }
+    private void showImage7() {
+
+        Bitmap bitmap1 = BitmapFactory.decodeResource(getResources(), R.drawable.asd);
+        int mPhotoWidth = bitmap1.getWidth();
+        int mPhotoHeight = bitmap1.getHeight();
+        Bitmap bitmap = Bitmap.createBitmap(mPhotoWidth, mPhotoHeight,
+                Bitmap.Config.ARGB_8888);
+
+        int p = 0;
+
+        SeekBar seekBar;
+        seekBar=(SeekBar)findViewById(R.id.SeekBar);
+
+        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            int progressChangedValue = 0;
+
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                progressChangedValue = progress;
+            }
+
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                Toast.makeText(MainActivity.this, "ALPHA =  " + progressChangedValue,
+                        Toast.LENGTH_SHORT).show();
+                alpha1 = progressChangedValue;
+            }
+        });
+
+
+
+
+        for (int i = 1; i < mPhotoWidth; i++) {
+            for (int j = 1; j < mPhotoHeight; j++) {
+
+                p = bitmap1.getPixel(i, j);
+
+
+
+                int redValue1 = Color.red(p);
+                int greenValue1 = Color.green(p);
+                int blueValue1 = Color.blue(p);
+                int blur = (redValue1 + greenValue1 + blueValue1) / 3;
+                bitmap.setPixel(i, j, Color.argb(alpha1, blur, blur, blur));
+            }
+        }
+
+        File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), "savedBitmap.jpg");
+
+        try {
+            FileOutputStream fos = null;
+            try {
+                fos = new FileOutputStream(file);
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 80, fos);
+            } finally {
+                if (fos != null) fos.close();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        this.imageView.setImageBitmap(bitmap);
+
+
+
     }
 }
-//
-//    Bitmap bitmap2;
-//    try {
-//        FileOutputStream fos = new FileOutputStream(  "bitmap.jpg");
-//        bitmap.compress(Bitmap.CompressFormat.JPEG, 75, fos);
-//        fos.flush();
-//        fos.close();
-//    } catch (Exception e) {
-//        Log.e("MyLog", e.toString());
-//    }
-//    }
+
+
+
+
+
 
